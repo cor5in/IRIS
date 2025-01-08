@@ -1,10 +1,10 @@
 import os
 from itertools import product
 
-import gym
+import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
 from numpy.random import BitGenerator
 from numpy.testing._private.utils import requires_memory
 from tqdm import tqdm
@@ -188,16 +188,26 @@ class Basestation(gym.Env):
         return (
             self.get_obs_space(),
             reward,
+            False,
             self.step_number == (self.max_number_steps),
             {},
         )
 
-    def reset(self, initial_trial: int = -1):
+    def reset(self, seed=None, options=None):
         """
-        Reset the UEs and Slices to enable the environment to start other
-        episode without past residuous. The reset function increases
-        the number of trials when a trial is finished.
+        Reset the environment
+        
+        Args:
+            seed: The seed for randomization
+            options: Additional options (like initial_trial)
         """
+        initial_trial = -1
+        if options and 'initial_trial' in options:
+            initial_trial = options['initial_trial']
+
+        if seed is not None:
+            self.rng = np.random.default_rng(seed)
+            
         if (self.step_number == 0 and self.trial_number == 1) or (
             self.trial_number == self.max_number_trials
         ):
@@ -222,7 +232,7 @@ class Basestation(gym.Env):
             for hist_label in self.hist_labels
         }
 
-        return self.get_obs_space()
+        return self.get_obs_space(), {}  
 
     def render(self, mode="human"):
         pass
